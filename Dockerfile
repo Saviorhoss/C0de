@@ -22,8 +22,6 @@ RUN wget -O Xray-linux-64.zip https://github.com/XTLS/Xray-core/releases/downloa
     unzip Xray-linux-64.zip -d . && \
     rm -f Xray-linux-64.zip
 
-COPY config.json /usr/share/nginx/html/config.json
-
 WORKDIR /var/www/html/savior
 RUN wget https://github.com/Saviorhoss/htmlzip/raw/main/savior.zip -O /tmp/savior.zip && \
     unzip /tmp/savior.zip -d . && \
