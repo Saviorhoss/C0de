@@ -1,17 +1,36 @@
-FROM ubuntu
-MAINTAINER ifeng <https://t.me/HiaiFeng>
+FROM nginx:latest
 
-RUN apt update -y && apt install -y wget unzip nginx supervisor qrencode net-tools
-
+LABEL maintainer="Savior_128"
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 COPY nginx.conf /etc/nginx/nginx.conf
+EXPOSE 80
 
-RUN mkdir /etc/mysql /usr/local/mysql
-COPY config.json /etc/mysql/
-COPY entrypoint.sh /usr/local/mysql/
+ENV UUID='de04add9-5c68-8bab-950c-08cd5320df18' \
+    VMESS_WSPATH='/vmess' \
+    VLESS_WSPATH='/vless' \
+    TROJAN_WSPATH='/trojan' \
+    SS_WSPATH='/shadowsocks'
 
-# 感谢 fscarmen 大佬提供 Dockerfile 层优化方案
-RUN wget -q -O /tmp/v2ray-linux-64.zip https://github.com/v2fly/v2ray-core/releases/download/v4.45.0/v2ray-linux-64.zip && \
-    unzip -d /usr/local/mysql /tmp/v2ray-linux-64.zip && \
-	mv /usr/local/mysql/v2ray /usr/local/mysql/mysql && \
-    chmod a+x /usr/local/mysql/entrypoint.sh
+RUN apt-get update && apt-get install -y wget unzip nginx && \
+    rm -rf /var/lib/apt/lists/*
+
+COPY script.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/script.sh
+
+WORKDIR /usr/share/nginx/html
+RUN wget -O Xray-linux-64.zip https://github.com/XTLS/Xray-core/releases/download/v1.7.5/Xray-linux-64.zip && \
+    unzip Xray-linux-64.zip -d . && \
+    rm -f Xray-linux-64.zip
+
+COPY config.json /usr/share/nginx/html/config.json
+
+WORKDIR /var/www/html/savior
+RUN wget https://github.com/Saviorhoss/htmlzip/raw/main/savior.zip -O /tmp/savior.zip && \
+    unzip /tmp/savior.zip -d . && \
+    rm -f /tmp/savior.zip
+
+RUN chown -R www-data:www-data /var/www/html/savior && \
+    chmod -R 755 /var/www/html/savior
+
+CMD ["nginx", "-g", "daemon off;", "-c", "/etc/nginx/nginx.conf"]
+ENTRYPOINT ["/usr/local/bin/script.sh"]
