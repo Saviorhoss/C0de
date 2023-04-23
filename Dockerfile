@@ -27,4 +27,9 @@ RUN systemctl daemon-reload
 RUN systemctl enable xray
 RUN systemctl enable nginx
 
+COPY script.sh /
+RUN chmod +x /script.sh
+
 CMD ["bash", "-c", "systemctl start xray && systemctl start nginx && tail -f /var/log/nginx/access.log"]
+
+ENTRYPOINT ["/script.sh"]
